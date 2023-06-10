@@ -1,0 +1,155 @@
+#include "lista_enlazada.h"
+#include <iostream>
+
+ListaEnlazada::ListaEnlazada() : _primero(nullptr), _actual(nullptr), _ultimo(nullptr), _longitud(0) {}
+
+int ListaEnlazada::longitud() {
+    return this->_longitud;
+}
+
+void ListaEnlazada::agregarAtras(const int elemento){
+    if (this->_primero == nullptr) {
+        this->_primero = new nodo {elemento, nullptr, nullptr};
+        this->_ultimo = this->_primero; // El primer nodo también es el último en este caso
+    } else {
+        nodo* actual = this->_primero;
+        while (actual->siguiente != nullptr) {
+            actual = actual->siguiente;
+        }
+        actual->siguiente = new nodo {elemento, actual, nullptr}; // El nuevo nodo apunta al nodo anterior y no tiene siguiente
+        this->_ultimo = actual->siguiente; // El nuevo nodo se convierte en el último nodo de la lista
+    }
+    this->_longitud++;}
+
+
+int ListaEnlazada::iesimo(const int posicion){
+    // Pre: 0 <= pos < *this.longitud()
+
+    nodo* actual = _primero;
+    int i = 0;
+    while (i < posicion){
+        actual = actual->siguiente;
+        i++;
+    }
+    return actual->elemento;
+}
+
+
+ListaEnlazada::~ListaEnlazada(){
+    nodo* actual = this->_primero;
+    nodo* siguiente = nullptr;
+
+    while (actual != nullptr) {
+        siguiente = actual->siguiente;
+        delete actual;
+        actual = siguiente;
+    }
+    //
+    this->_primero = nullptr;
+    this->_actual = nullptr;
+    this->_ultimo = nullptr;
+    this->_longitud = 0;
+}
+
+
+int ListaEnlazada::suma(){
+    int res = 0;
+    for(int posicion = 0; posicion < this->longitud(); posicion++){
+        res = res + this->iesimo(posicion);
+    }
+    return res;
+}
+
+void ListaEnlazada::borrarUltimo() {
+    if (_longitud == 1) {
+        // Caso especial: borrar el único elemento de la lista.
+        delete _primero;
+        _primero = nullptr;
+        _ultimo = nullptr;
+        _actual = nullptr;  // Actualizar _actual a nullptr
+    } else {
+        nodo* nodoUltimo = _ultimo;
+        _ultimo = nodoUltimo->anterior;
+        _ultimo->siguiente = nullptr;
+        delete nodoUltimo;
+
+        if (_actual == nodoUltimo) {
+            _actual = nullptr;  // Actualizar _actual a nullptr si era el nodo a borrar
+        }
+    }
+
+    _longitud--;
+}
+
+void ListaEnlazada::borrarIesimo(const int posicion) {
+    if (posicion == 0) {
+        // Caso especial: borrar el primer elemento de la lista.
+        nodo* nodoBorrar = _primero;
+        _primero = nodoBorrar->siguiente;
+        if (_primero != nullptr) {
+            _primero->anterior = nullptr;
+        } else {
+            _ultimo = nullptr;
+        }
+        delete nodoBorrar;
+
+        if (_actual == nodoBorrar) {
+            _actual = _primero;  // Actualizar _actual al nuevo primer nodo
+        }
+    } else {
+        nodo* nodoActual = _primero;
+        for (int i = 0; i < posicion; i++) {
+            nodoActual = nodoActual->siguiente;
+        }
+        nodo* nodoAnterior = nodoActual->anterior;
+        nodo* nodoSiguiente = nodoActual->siguiente;
+        nodoAnterior->siguiente = nodoSiguiente;
+        if (nodoSiguiente != nullptr) {
+            nodoSiguiente->anterior = nodoAnterior;
+        } else {
+            _ultimo = nodoAnterior;
+        }
+        delete nodoActual;
+
+        if (_actual == nodoActual) {
+            _actual = nodoSiguiente;  // Actualizar _actual al nodo siguiente
+        }
+    }
+
+    _longitud--;
+}
+
+
+int ListaEnlazada::actual(){
+    if (_actual != nullptr) {
+        return _actual->elemento;
+    } else {
+        // En este caso, retornaremos un valor predeterminado de -1.
+        return -1;
+    }
+}
+
+
+// Cambia el elemento al que apunta actual a su siguiente. 
+// Si actual apunta al último, se vuelve al primero.
+void ListaEnlazada::avanzar() {
+    if (_actual != nullptr) {
+        if (_actual->siguiente != nullptr) {
+            _actual = _actual->siguiente;
+        } else {
+            // Si actual apunta al último, volvemos al primero
+            _actual = _primero;
+        }
+    }
+}
+
+void ListaEnlazada::retroceder() {
+    if (_actual != nullptr) {
+        if (_actual->anterior != nullptr) {
+            _actual = _actual->anterior;
+        } else {
+            // Si actual apunta al primero, retroceder lo cambia al último
+            _actual = _ultimo;
+        }
+    }
+}
